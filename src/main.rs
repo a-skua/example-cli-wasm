@@ -17,6 +17,11 @@ enum Commands {
         #[arg(short, long)]
         url: String,
     },
+    #[command(about = "Execute a shell command")]
+    Call {
+        #[arg(short, long)]
+        command: String,
+    },
 }
 
 #[wstd::main]
@@ -26,6 +31,7 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Hello => command::hello(),
         Commands::Get { url } => command::get_url(&url).await?,
+        Commands::Call { command } => command::cli_call(&command),
     }
     Ok(())
 }
