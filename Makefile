@@ -5,6 +5,10 @@ CONFIG := Cargo.toml Cargo.lock
 run: target/wasm32-wasip2/release/example-cli.wasm
 	wasmtime run target/wasm32-wasip2/release/example-cli.wasm
 
+.PHONY: fmt
+fmt:
+	cargo fmt
+
 .PHONY: clean
 clean:
 	cargo clean
