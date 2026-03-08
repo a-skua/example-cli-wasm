@@ -3,7 +3,7 @@ CONFIG := Cargo.toml Cargo.lock
 
 .PHONY: run
 run: target/wasm32-wasip2/release/example-cli.wasm
-	wasmtime run target/wasm32-wasip2/release/example-cli.wasm
+	wasmtime run -S http target/wasm32-wasip2/release/example-cli.wasm
 
 .PHONY: fmt
 fmt:

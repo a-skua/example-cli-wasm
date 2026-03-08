@@ -1,7 +1,5 @@
 mod command;
 use clap::{Parser, Subcommand};
-use std::process;
-use anyhow::Result;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -12,7 +10,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    #[command(about = "Prints 'Hello, World!'")]
     Hello,
+    #[command(about = "Get content from a URL")]
+    Get {
+        #[arg(short, long)]
+        url: String,
+    },
 }
 
 #[wstd::main]
@@ -21,6 +25,7 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.command {
         Commands::Hello => command::hello(),
+        Commands::Get { url } => command::get_url(&url).await?,
     }
     Ok(())
 }
