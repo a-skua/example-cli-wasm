@@ -1,4 +1,5 @@
 mod command;
+mod serve;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -22,6 +23,11 @@ enum Commands {
         #[arg(short, long)]
         command: String,
     },
+    #[command(about = "Start HTTP server")]
+    Serve {
+        #[arg(short, long, default_value_t = 8080)]
+        port: u16,
+    },
 }
 
 #[wstd::main]
@@ -32,6 +38,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Hello => command::hello(),
         Commands::Get { url } => command::get_url(&url).await?,
         Commands::Call { command } => command::cli_call(&command),
+        Commands::Serve { port } => command::serve(port).await?,
     }
     Ok(())
 }
