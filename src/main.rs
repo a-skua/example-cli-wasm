@@ -1,7 +1,7 @@
 mod command;
 use clap::{Parser, Subcommand};
 use std::process;
-use wstd::io;
+use anyhow::Result;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -16,7 +16,7 @@ enum Commands {
 }
 
 #[wstd::main]
-async fn main() -> io::Result<()> {
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
