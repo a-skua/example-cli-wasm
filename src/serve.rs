@@ -1,6 +1,5 @@
 pub mod io;
-use wstd::http::body::Body;
-use wstd::http::{Request, Response};
+use wstd::http::{Body, Request, Response};
 
 pub async fn handler(request: Request<Body>) -> anyhow::Result<Response<Body>> {
     let path = request.uri().path_and_query().unwrap().as_str();
