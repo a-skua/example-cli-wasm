@@ -19,6 +19,6 @@ async fn not_found() -> anyhow::Result<Response<Body>> {
 
 async fn hello(_request: Request<Body>) -> anyhow::Result<Response<Body>> {
     Ok(Response::new(
-        "Hello, wasi:http/proxy world!\n".to_owned().into(),
+        "Hello, wasi:net/TcpListener!\n".to_owned().into(),
     ))
 }
