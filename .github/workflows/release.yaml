@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: {}
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'chore: bump version')"
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - id: version
+        run: echo "version=$(date -u +'%Y.%-m.%-d')" >> "$GITHUB_OUTPUT"
+
+      - run: sed -Ei "s/^version\s*=\s*\".*\"/version = \"${{ steps.version.outputs.version }}\"/" Cargo.toml
+
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || exit 0
+          git push
+
+  release:
+    needs: version-bump
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.rustup/toolchains/*/lib/rustlib/wasm32-wasip2
+            target
+          key: cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-
+
+      - run: rustup target add wasm32-wasip2
+
+      - run: cargo build --release --target wasm32-wasip2
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ needs.version-bump.outputs.version }}" \
+            target/wasm32-wasip2/release/example-cli.wasm \
+            --title "${{ needs.version-bump.outputs.version }}" \
+            --generate-notes
