@@ -5,5 +5,9 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
+bytes = "1"
 clap = { version = "4.5.60", features = ["derive"] }
+http-body-util = "0.1"
+hyper = { version = "1", default-features = false, features = ["http1", "server"] }
+percent-encoding = "2"
 wstd = "0.6.5"

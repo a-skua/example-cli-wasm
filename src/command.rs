@@ -1,16 +1,17 @@
-use crate::serve;
-use std::net::TcpListener;
+use crate::{rt, serve};
 use std::process::Command;
-use wstd::http;
+use wstd::http::{Body, Client, Request};
+use wstd::iter::AsyncIterator;
+use wstd::net::TcpListener;
 
 pub fn hello() {
     println!("Hello, world!");
 }
 
 pub async fn get_url(url: &str) -> anyhow::Result<()> {
-    let request = http::Request::get(url).body(http::Body::empty())?;
+    let request = Request::get(url).body(Body::empty())?;
 
-    let response = http::Client::new().send(request).await?;
+    let response = Client::new().send(request).await?;
 
     let mut body = response.into_body();
     let contents = body.contents().await?;
@@ -39,15 +40,20 @@ pub fn cli_call(command: &str) {
 
 pub async fn serve(port: u16) -> anyhow::Result<()> {
     let addr = format!("127.0.0.1:{}", port);
-    let listener = TcpListener::bind(&addr)?;
+    let listener = TcpListener::bind(&addr).await?;
     println!("Listening on {}", listener.local_addr()?);
 
     let mut incoming = listener.incoming();
-    while let Some(stream) = incoming.next() {
+    while let Some(stream) = incoming.next().await {
         let stream = stream?;
-        let request = serve::io::parse_request(&stream).await?;
-        let response = serve::handler(request).await?;
-        serve::io::write_response(&stream, response).await?;
+        let io = rt::WasiIo::new(stream);
+
+        if let Err(e) = hyper::server::conn::http1::Builder::new()
+            .serve_connection(io, hyper::service::service_fn(serve::handler))
+            .await
+        {
+            eprintln!("Error serving connection: {}", e);
+        }
     }
     Ok(())
 }

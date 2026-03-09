@@ -1,23 +1,34 @@
-pub mod io;
-use wstd::http::{Body, Request, Response};
+use bytes::Bytes;
+use http_body_util::Full;
+use hyper::body::Incoming;
+use hyper::{Request, Response, StatusCode};
+use percent_encoding::percent_decode_str;
+use std::convert::Infallible;
 
-pub async fn handler(request: Request<Body>) -> anyhow::Result<Response<Body>> {
-    let path = request.uri().path_and_query().unwrap().as_str();
+pub async fn handler(request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
+    let path = percent_decode_str(request.uri().path())
+        .decode_utf8_lossy()
+        .into_owned();
     println!("serving {path}");
-    match path {
-        "/" => hello(request).await,
-        _ => not_found().await,
+    let path: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+    match path.as_slice() {
+        [] => Ok(hello("hyper")),
+        ["greet", name] => Ok(hello(name)),
+        _ => Ok(not_found()),
     }
 }
 
-async fn not_found() -> anyhow::Result<Response<Body>> {
-    let mut response = Response::new(Body::from("404 Not Found\n"));
-    *response.status_mut() = wstd::http::StatusCode::NOT_FOUND;
-    Ok(response)
+fn not_found() -> Response<Full<Bytes>> {
+    Response::builder()
+        .status(StatusCode::NOT_FOUND)
+        .body(Full::new(Bytes::from("404 Not Found\n")))
+        .unwrap()
 }
 
-async fn hello(_request: Request<Body>) -> anyhow::Result<Response<Body>> {
-    Ok(Response::new(
-        "Hello, wasi:http/proxy world!\n".to_owned().into(),
-    ))
+fn hello(name: &str) -> Response<Full<Bytes>> {
+    let body = format!("Hello, {name}!\n");
+    Response::builder()
+        .header("Content-Type", "text/plain; charset=utf-8")
+        .body(Full::new(Bytes::from(body)))
+        .unwrap()
 }
