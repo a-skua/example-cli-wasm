@@ -5,11 +5,14 @@ PORT ?= 8080
 
 .PHONY: run
 run: target/wasm32-wasip2/release/example-cli.wasm
-	wasmtime run -S http $<
+	wasmtime run -S http $< $(ARGS)
 
 .PHONY: serve
 serve: target/wasm32-wasip2/release/example-cli.wasm
 	wasmtime run -S http -S inherit-network $< serve -p $(PORT)
+
+.PHONY: build
+build: target/wasm32-wasip2/release/example-cli.wasm
 
 .PHONY: fmt
 fmt:
