@@ -30,11 +30,9 @@ jobs:
           git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || exit 0
           git push
 
-  release:
+  build:
     needs: version-bump
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -50,14 +48,30 @@ jobs:
           key: cargo-${{ hashFiles('Cargo.lock') }}
           restore-keys: cargo-
 
-      - run: rustup target add wasm32-wasip2
+      - run: rustup target list --installed | grep -q wasm32-wasip2 || rustup target add wasm32-wasip2
 
       - run: cargo build --release --target wasm32-wasip2
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: example-cli-wasm
+          path: target/wasm32-wasip2/release/example-cli.wasm
+
+  release:
+    needs: [version-bump, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: example-cli-wasm
 
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${{ needs.version-bump.outputs.version }}" \
-            target/wasm32-wasip2/release/example-cli.wasm \
+            example-cli.wasm \
+            --repo "${{ github.repository }}" \
             --title "${{ needs.version-bump.outputs.version }}" \
             --generate-notes
