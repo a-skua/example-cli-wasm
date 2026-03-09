@@ -44,6 +44,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ~/.rustup/toolchains/*/lib/rustlib/wasm32-wasip2
+            ~/.rustup/toolchains/*/lib/rustlib/manifest-rust-std-wasm32-wasip2
             target
           key: cargo-${{ hashFiles('Cargo.lock') }}
           restore-keys: cargo-
