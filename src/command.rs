@@ -1,4 +1,4 @@
-use crate::serve;
+use crate::{rt, serve};
 use std::process::Command;
 use wstd::http::{Body, Client, Request};
 use wstd::iter::AsyncIterator;
@@ -46,9 +46,14 @@ pub async fn serve(port: u16) -> anyhow::Result<()> {
     let mut incoming = listener.incoming();
     while let Some(stream) = incoming.next().await {
         let stream = stream?;
-        let request = serve::io::parse_request(&stream).await?;
-        let response = serve::handler(request).await?;
-        serve::io::write_response(&stream, response).await?;
+        let io = rt::WasiIo::new(stream);
+
+        if let Err(e) = hyper::server::conn::http1::Builder::new()
+            .serve_connection(io, hyper::service::service_fn(serve::handler))
+            .await
+        {
+            eprintln!("Error serving connection: {}", e);
+        }
     }
     Ok(())
 }

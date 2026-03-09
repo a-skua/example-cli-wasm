@@ -1,24 +1,25 @@
-pub mod io;
-use wstd::http::body::Body;
-use wstd::http::{Request, Response};
+use bytes::Bytes;
+use http_body_util::Full;
+use hyper::body::Incoming;
+use hyper::{Request, Response, StatusCode};
+use std::convert::Infallible;
 
-pub async fn handler(request: Request<Body>) -> anyhow::Result<Response<Body>> {
-    let path = request.uri().path_and_query().unwrap().as_str();
+pub async fn handler(request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
+    let path = request.uri().path();
     println!("serving {path}");
     match path {
-        "/" => hello(request).await,
-        _ => not_found().await,
+        "/" => Ok(hello()),
+        _ => Ok(not_found()),
     }
 }
 
-async fn not_found() -> anyhow::Result<Response<Body>> {
-    let mut response = Response::new(Body::from("404 Not Found\n"));
-    *response.status_mut() = wstd::http::StatusCode::NOT_FOUND;
-    Ok(response)
+fn not_found() -> Response<Full<Bytes>> {
+    Response::builder()
+        .status(StatusCode::NOT_FOUND)
+        .body(Full::new(Bytes::from("404 Not Found\n")))
+        .unwrap()
 }
 
-async fn hello(_request: Request<Body>) -> anyhow::Result<Response<Body>> {
-    Ok(Response::new(
-        "Hello, wasi:net/TcpListener!\n".to_owned().into(),
-    ))
+fn hello() -> Response<Full<Bytes>> {
+    Response::new(Full::new(Bytes::from("Hello, hyper!\n")))
 }
