@@ -56,10 +56,7 @@ impl hyper::rt::Write for WasiIo {
         pinned.poll(cx)
     }
 
-    fn poll_flush(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Result<(), io::Error>> {
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
         let this = self.get_mut();
         let mut stream = &this.stream;
         let mut fut = AsyncWrite::flush(&mut stream);
@@ -68,10 +65,7 @@ impl hyper::rt::Write for WasiIo {
         pinned.poll(cx)
     }
 
-    fn poll_shutdown(
-        self: Pin<&mut Self>,
-        _cx: &mut Context<'_>,
-    ) -> Poll<Result<(), io::Error>> {
+    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
         Poll::Ready(Ok(()))
     }
 }
