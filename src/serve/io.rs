@@ -1,6 +1,7 @@
-use std::io::{Read, Write};
-use std::net::TcpStream;
-use wstd::http::{Body, Request, Response};
+use wstd::http::body::Body;
+use wstd::http::{Request, Response};
+use wstd::io::{AsyncRead, AsyncWrite};
+use wstd::net::TcpStream;
 
 /// TcpStream から HTTP/1.1 リクエストをパースする
 pub async fn parse_request(stream: &TcpStream) -> anyhow::Result<Request<Body>> {
@@ -10,7 +11,7 @@ pub async fn parse_request(stream: &TcpStream) -> anyhow::Result<Request<Body>> 
 
     // ヘッダー末尾（\r\n\r\n）まで読み込む
     loop {
-        let n = reader.read(&mut tmp)?;
+        let n = reader.read(&mut tmp).await?;
         if n == 0 {
             anyhow::bail!("connection closed before headers completed");
         }
@@ -59,7 +60,7 @@ pub async fn parse_request(stream: &TcpStream) -> anyhow::Result<Request<Body>> 
     let body = if content_length > 0 {
         let mut body_buf = remaining.to_vec();
         while body_buf.len() < content_length {
-            let n = reader.read(&mut tmp)?;
+            let n = reader.read(&mut tmp).await?;
             if n == 0 {
                 break;
             }
@@ -85,26 +86,26 @@ pub async fn write_response(stream: &TcpStream, response: Response<Body>) -> any
     let status = parts.status;
     let reason = status.canonical_reason().unwrap_or("OK");
     let status_line = format!("HTTP/1.1 {} {}\r\n", status.as_u16(), reason);
-    writer.write_all(status_line.as_bytes())?;
+    writer.write_all(status_line.as_bytes()).await?;
 
     // ヘッダー
     for (name, value) in &parts.headers {
         let header_line = format!("{}: {}\r\n", name, value.to_str().unwrap_or(""));
-        writer.write_all(header_line.as_bytes())?;
+        writer.write_all(header_line.as_bytes()).await?;
     }
 
     // Content-Length（元のヘッダーに無い場合）
     if !parts.headers.contains_key("content-length") {
         let cl = format!("Content-Length: {}\r\n", body_bytes.len());
-        writer.write_all(cl.as_bytes())?;
+        writer.write_all(cl.as_bytes()).await?;
     }
 
     // ヘッダー終端
-    writer.write_all(b"\r\n")?;
+    writer.write_all(b"\r\n").await?;
 
     // ボディ
-    writer.write_all(body_bytes)?;
-    writer.flush()?;
+    writer.write_all(body_bytes).await?;
+    writer.flush().await?;
 
     Ok(())
 }
