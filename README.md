@@ -37,3 +37,9 @@ or
 ```sh
 wasmtime run -S http -S inherit-network target/wasm32-wasip2/release/example-cli.wasm serve -p 8080
 ```
+
+### Gcloud
+
+```sh
+make gcloud ARGS='storage buckets list --project <project-id>'
+```

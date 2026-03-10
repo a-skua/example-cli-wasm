@@ -5,11 +5,15 @@ PORT ?= 8080
 
 .PHONY: run
 run: target/wasm32-wasip2/release/example-cli.wasm
-	wasmtime run -S http $< $(ARGS)
+	wasmtime run -S http -S inherit-env --dir $(HOME)/.config/gcloud $< $(ARGS)
 
 .PHONY: serve
 serve: target/wasm32-wasip2/release/example-cli.wasm
 	wasmtime run -S http -S inherit-network $< serve -p $(PORT)
+
+.PHONY: gcloud
+gcloud: target/wasm32-wasip2/release/example-cli.wasm
+	wasmtime run -S http -S inherit-env --dir $(HOME)/.config/gcloud $< gcloud $(ARGS)
 
 .PHONY: build
 build: target/wasm32-wasip2/release/example-cli.wasm

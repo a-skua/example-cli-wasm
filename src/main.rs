@@ -1,4 +1,5 @@
 mod command;
+mod gcloud;
 mod rt;
 mod serve;
 use clap::{Parser, Subcommand};
@@ -29,6 +30,8 @@ enum Commands {
         #[arg(short, long, default_value_t = 8080)]
         port: u16,
     },
+    #[command(subcommand)]
+    Gcloud(gcloud::Resource),
 }
 
 #[wstd::main]
@@ -40,6 +43,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Get { url } => command::get_url(&url).await?,
         Commands::Call { command } => command::cli_call(&command),
         Commands::Serve { port } => command::serve(port).await?,
+        Commands::Gcloud(r) => gcloud::resource(r).await?,
     }
     Ok(())
 }
