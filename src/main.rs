@@ -43,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Get { url } => command::get_url(&url).await?,
         Commands::Call { command } => command::cli_call(&command),
         Commands::Serve { port } => command::serve(port).await?,
-        Commands::Gcloud(r) => gcloud::resource(r).await?,
+        Commands::Gcloud(r) => gcloud::resource(r)?,
     }
     Ok(())
 }
