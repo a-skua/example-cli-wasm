@@ -1,29 +1,27 @@
 # Example Wasm (CLI)
 
-## build
+## Setup
+
+```sh
+make init
+```
+
+## Build
 
 ```sh
 make build
 ```
 
-or
-
-```sh
-cargo build --release --target wasm32-wasip2
-```
-
-## examples
+## Examples
 
 ### CLI
 
 ```sh
-make run ARGS='get -h'
+wa run example-cli hello
 ```
 
-or
-
 ```sh
-wasmtime run -S http target/wasm32-wasip2/release/example-cli.wasm get -h
+wa run example-cli get -h
 ```
 
 ### HTTP Server
@@ -35,11 +33,15 @@ make serve PORT=8080
 or
 
 ```sh
-wasmtime run -S http -S inherit-network target/wasm32-wasip2/release/example-cli.wasm serve -p 8080
+wa serve example-cli --addr 0.0.0.0:8080
 ```
 
 ### Gcloud
 
 ```sh
-make gcloud ARGS='storage buckets list --project <project-id>'
+wa run example-cli gcloud auth token get --scopes https://www.googleapis.com/auth/cloud-platform
+```
+
+```sh
+wa run example-cli gcloud storage buckets list --project <project-id>
 ```
