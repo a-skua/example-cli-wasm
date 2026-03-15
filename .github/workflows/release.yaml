@@ -67,7 +67,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: example-cli-wasm
-          path: target/wasm32-wasip2/release/composed.wasm
+          path: target/wasm32-wasip2/release/composed-example-cli.wasm
 
   publish:
     needs: [version-bump, build]
@@ -90,7 +90,7 @@ jobs:
             -u ${{ github.actor }} \
             -p ${{ secrets.GITHUB_TOKEN }} \
             ghcr.io/a-skua/example-cli:${{ needs.version-bump.outputs.version }} \
-            composed.wasm
+            composed-example-cli.wasm
 
   release:
     needs: [version-bump, build]
@@ -107,7 +107,7 @@ jobs:
           VERSION: ${{ needs.version-bump.outputs.version }}+${{ needs.build.outputs.short-sha }}
         run: |
           gh release create "$VERSION" \
-            composed.wasm \
+            composed-example-cli.wasm \
             --repo "${{ github.repository }}" \
             --title "$VERSION" \
             --generate-notes
