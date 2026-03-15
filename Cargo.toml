@@ -1,6 +1,6 @@
 [package]
 name = "example_cli"
-version = "2026.3.15"
+version = "2026.3.16"
 edition = "2024"
 
 [lib]
