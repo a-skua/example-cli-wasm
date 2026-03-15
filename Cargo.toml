@@ -1,14 +1,16 @@
 [package]
-name = "example-cli"
-version = "2026.3.14"
+name = "example_cli"
+version = "2026.3.15"
 edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0.102"
-bytes = "1"
+axum = { version = "0.8", default-features = false }
 clap = { version = "4.5.60", features = ["derive"] }
-http-body-util = "0.1"
-hyper = { version = "1", default-features = false, features = ["http1", "server"] }
-percent-encoding = "2"
+wasip2 = "1.0.2"
 wit-bindgen = "0.53.1"
-wstd = "0.6.5"
+wstd = "0.6.6"
+wstd-axum = "0.6.6"

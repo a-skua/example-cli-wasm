@@ -1,8 +1,5 @@
-use crate::{rt, serve};
 use std::process::Command;
 use wstd::http::{Body, Client, Request};
-use wstd::iter::AsyncIterator;
-use wstd::net::TcpListener;
 
 pub fn hello() {
     println!("Hello, world!");
@@ -36,24 +33,4 @@ pub fn cli_call(command: &str) {
     } else {
         eprintln!("Command error: {}", String::from_utf8_lossy(&output.stderr));
     }
-}
-
-pub async fn serve(port: u16) -> anyhow::Result<()> {
-    let addr = format!("127.0.0.1:{}", port);
-    let listener = TcpListener::bind(&addr).await?;
-    println!("Listening on {}", listener.local_addr()?);
-
-    let mut incoming = listener.incoming();
-    while let Some(stream) = incoming.next().await {
-        let stream = stream?;
-        let io = rt::WasiIo::new(stream);
-
-        if let Err(e) = hyper::server::conn::http1::Builder::new()
-            .serve_connection(io, hyper::service::service_fn(serve::handler))
-            .await
-        {
-            eprintln!("Error serving connection: {}", e);
-        }
-    }
-    Ok(())
 }
