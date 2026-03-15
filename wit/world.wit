@@ -1,5 +1,8 @@
-package example:cli@0.1.0;
+package example:cli@0.2.0;
 
 world app {
-    import gcloud:storage/buckets@0.1.0;
+    include wasi:http/proxy@0.2.9;
+    include wasi:cli/command@0.2.9;
+    import gcloud:auth/token-source@0.3.0;
+    import gcloud:storage/buckets@0.3.0;
 }
