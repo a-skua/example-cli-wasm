@@ -41,10 +41,10 @@ wit/deps: wit/*.wit
 %: %.php
 	php $< > $@
 
-$(GCLOUD_AUTH_WASM):
+$(GCLOUD_AUTH_WASM): $(WIT)
 	wkg oci pull $(GCLOUD_AUTH_WASM_REF) -o $@
 
-$(GCLOUD_STORAGE_WASM):
+$(GCLOUD_STORAGE_WASM): $(WIT)
 	wkg oci pull $(GCLOUD_STORAGE_WASM_REF) -o $@
 
 $(EXAMPLE_WASM): $(CONFIG) $(SRC) $(WIT)
